@@ -98,9 +98,9 @@ def fetch_papers(date_str=None):
     if date_str is None:
         date_str = today_str()
 
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    lookback = datetime.date.today() - datetime.timedelta(days=3)
 
-    client = arxiv.Client(page_size=100, delay_seconds=1.0)
+    client = arxiv.Client(page_size=100, delay_seconds=3.0)
 
     papers = []
     seen_ids = set()
@@ -109,7 +109,7 @@ def fetch_papers(date_str=None):
         search = arxiv.Search(
             query=f"cat:{cat}",
             sort_by=arxiv.SortCriterion.SubmittedDate,
-            max_results=50,
+            max_results=100,
         )
         try:
             results = list(client.results(search))
@@ -124,7 +124,7 @@ def fetch_papers(date_str=None):
             seen_ids.add(pid)
 
             pub_date = r.published.date()
-            if pub_date < yesterday:
+            if pub_date < lookback:
                 continue
 
             doi = extract_doi(r)
