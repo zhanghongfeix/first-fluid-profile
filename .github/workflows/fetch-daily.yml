@@ -1,0 +1,36 @@
+name: 每日论文抓取
+
+on:
+  schedule:
+    # 北京时间早上9点 (UTC+8 = 9:00 → UTC 1:00)
+    - cron: "0 1 * * *"
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install arxiv
+
+      - name: 抓取论文
+        run: python scripts/fetch_papers.py
+
+      - name: 提交更新
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add papers/
+          git diff --cached --quiet || git commit -m "📰 $(date +%Y-%m-%d) 论文更新"
+
+          git push
